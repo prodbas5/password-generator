@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор паролей</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .copy-button {
+            background-color: #ccc; /* Серый цвет кнопки */
+            color: black;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px; /* Маленький размер */
+            cursor: pointer;
+            font-size: 0.9em; /* Уменьшенный шрифт */
+            margin-left: 10px; /* Отступ от текста */
+        }
+
+        .copy-button:hover {
+            background-color: #bbb; /* Цвет при наведении */
+        }
+
+        /* Добавлен стиль для отступа */
+        #passwordOutput {
+            margin-top: 20px; /* Увеличенный отступ сверху для эстетики */
+            display: inline-block; /* Чтобы кнопка копирования была на одной строке */
+        }
+
+        /* Добавим немного стилей для контейнера */
+        .container {
+            max-width: 400px; /* Максимальная ширина контейнера */
+            margin: 0 auto; /* Центрирование контейнера */
+            padding: 20px; /* Внутренний отступ */
+            border: 1px solid #ccc; /* Рамка вокруг контейнера */
+            border-radius: 8px; /* Закругленные углы */
+            background-color: #f9f9f9; /* Цвет фона контейнера */
+        }
+    </style>
+</head>
+<body class="business-style">
+    <div class="container">
+        <h1 id="title">Генератор паролей</h1>
+        
+        <div class="input-group">
+            <label for="length" id="lengthLabel">Длина пароля:</label>
+            <input type="number" id="length" value="12" min="4" max="32">
+        </div>
+
+        <div class="input-group">
+            <label class="checkbox">
+                <input type="checkbox" id="includeUppercase" checked>
+                <span id="includeUppercaseLabel">Использовать заглавные буквы</span>
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" id="includeLowercase" checked>
+                <span id="includeLowercaseLabel">Использовать строчные буквы</span>
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" id="includeNumbers" checked>
+                <span id="includeNumbersLabel">Использовать цифры</span>
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" id="includeSpecialChars" checked>
+                <span id="includeSpecialCharsLabel">Использовать специальные символы</span>
+            </label>
+        </div>
+
+        <div class="security-level">
+            <label id="passwordStrengthLabel">Надежность пароля:</label>
+            <div id="passwordStrength" class="strength-bar"></div>
+        </div>
+
+        <button onclick="generateAndDisplayPassword()" id="generateButton">Сгенерировать пароль</button>
+
+        <p id="passwordOutput">Ваш пароль: </p>
+        <button class="copy-button" onclick="copyPassword()" id="copyButton">Копировать</button>
+
+        <div class="input-group">
+            <label for="language">Выберите язык:</label>
+            <select id="language" onchange="changeLanguage()">
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+    </div>
+    <script>
+        const translations = {
+            en: {
+                title: "Password Generator",
+                lengthLabel: "Password Length:",
+                includeUppercase: "Include Uppercase Letters",
+                includeLowercase: "Include Lowercase Letters",
+                includeNumbers: "Include Numbers",
+                includeSpecialChars: "Include Special Characters",
+                passwordStrengthLabel: "Password Strength:",
+                generateButton: "Generate Password",
+                yourPassword: "Your Password:",
+                copyButton: "Copy Password",
+                selectAtLeastOne: "Select at least one character type"
+            },
+            ru: {
+                title: "Генератор паролей",
+                lengthLabel: "Длина пароля:",
+                includeUppercase: "Использовать заглавные буквы",
+                includeLowercase: "Использовать строчные буквы",
+                includeNumbers: "Использовать цифры",
+                includeSpecialChars: "Использовать специальные символы",
+                passwordStrengthLabel: "Надежность пароля:",
+                generateButton: "Сгенерировать пароль",
+                yourPassword: "Ваш пароль:",
+                copyButton: "Копировать пароль",
+                selectAtLeastOne: "Выберите хотя бы один тип символов"
+            }
+        };
+
+        let currentLanguage = 'ru'; // Устанавливаем язык по умолчанию
+
+        function changeLanguage() {
+            const selectedLanguage = document.getElementById('language').value;
+            currentLanguage = selectedLanguage;
+            updateTexts();
+        }
+
+        function updateTexts() {
+            document.getElementById('title').textContent = translations[currentLanguage].title;
+            document.getElementById('lengthLabel').textContent = translations[currentLanguage].lengthLabel;
+            document.getElementById('includeUppercaseLabel').textContent = translations[currentLanguage].includeUppercase;
+            document.getElementById('includeLowercaseLabel').textContent = translations[currentLanguage].includeLowercase;
+            document.getElementById('includeNumbersLabel').textContent = translations[currentLanguage].includeNumbers;
+            document.getElementById('includeSpecialCharsLabel').textContent = translations[currentLanguage].includeSpecialChars;
+            document.getElementById('passwordStrengthLabel').textContent = translations[currentLanguage].passwordStrengthLabel;
+            document.getElementById('generateButton').textContent = translations[currentLanguage].generateButton;
+            document.getElementById('copyButton').textContent = translations[currentLanguage].copyButton;
+        }
+
+        function generatePassword(length = 12, options) {
+            const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+            const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            const numbers = '0123456789';
+            const specialChars = '!@#$%^&*()_+{}[]<>?';
+
+            let characters = '';
+            if (options.includeLowercase) characters += lowercase;
+            if (options.includeUppercase) characters += uppercase;
+            if (options.includeNumbers) characters += numbers;
+            if (options.includeSpecialChars) characters += specialChars;
+
+            if (!characters) return translations[currentLanguage].selectAtLeastOne;
+
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                password += characters[randomIndex];
+            }
+
+            return password;
+        }
+
+        function evaluatePasswordStrength(password) {
+            let strength = 0;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[a-z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+            if (password.length >= 12) strength += 1;
+
+            const strengthBar = document.getElementById('passwordStrength');
+            strengthBar.className = 'strength-bar'; // Сбрасываем класс
+
+            if (strength <= 1) {
+                strengthBar.classList.add('low');
+            } else if (strength === 2) {
+                strengthBar.classList.add('medium');
+            } else if (strength === 3) {
+                strengthBar.classList.add('high');
+            } else if (strength >= 4) {
+                strengthBar.classList.add('very-high');
+            }
+        }
+
+        function generateAndDisplayPassword() {
+            const length = parseInt(document.getElementById('length').value, 10);
+            const options = {
+                includeUppercase: document.getElementById('includeUppercase').checked,
+                includeLowercase: document.getElementById('includeLowercase').checked,
+                includeNumbers: document.getElementById('includeNumbers').checked,
+                includeSpecialChars: document.getElementById('includeSpecialChars').checked
+            };
+
+            const password = generatePassword(length, options);
+            document.getElementById('passwordOutput').textContent = `${translations[currentLanguage].yourPassword} ${password}`;
+            evaluatePasswordStrength(password);
+        }
+
+        function copyPassword() {
+            const passwordOutput = document.getElementById('passwordOutput').textContent;
+            const password = passwordOutput.replace(`${translations[currentLanguage].yourPassword} `, ''); // Извлекаем только пароль
+
+            navigator.clipboard.writeText(password).then(() => {
+                alert('Пароль скопирован в буфер обмена!');
+            }).catch(err => {
+                console.error('Ошибка при копировании: ', err);
+            });
+        }
+
+        // Вызываем updateTexts при загрузке страницы
+        window.onload = updateTexts;
+    </script>
+</body>
+</html>
